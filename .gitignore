@@ -27,6 +27,7 @@ htmlcov/
 .nox/
 .hypothesis/
 *.cover
+/tests/test_create_pvfs_file*
 
 # Type checkers / linters
 .mypy_cache/
