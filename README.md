@@ -56,4 +56,15 @@ Source and issues: see **Repository** URL in `pyproject.toml`.
 
 ## Publishing releases
 
-The workflow `.github/workflows/publish.yml` uploads to PyPI when you publish a **GitHub Release** or run **Publish to PyPI** manually from the Actions tab. Configure [trusted publishing](https://docs.pypi.org/trusted-publishers/) for this repository on the PyPI project settings.
+Do **not** rely on `twine upload` from a developer machine for routine releases (credentials drift and audit pain). Use the GitHub Action instead.
+
+1. **Configure [trusted publishing](https://docs.pypi.org/trusted-publishers/)** on PyPI for this GitHub repository and workflow `publish.yml` (OIDC — no `PYPI_API_TOKEN` in repo secrets unless you choose that path).
+2. **Bump** `version` in `pyproject.toml`, commit, then create and push a **version tag** matching your policy, e.g. `v0.1.2`:
+   ```bash
+   git tag v0.1.2
+   git push origin v0.1.2
+   ```
+   Pushing tag `v*` runs [`.github/workflows/publish.yml`](.github/workflows/publish.yml): builds **sdist + wheels** on Ubuntu and Windows, merges artifacts, and uploads with `pypa/gh-action-pypi-publish`.
+3. **Manual run:** Actions → **Publish to PyPI** → *Run workflow* (same build/upload path).
+
+**Note:** `ptech-morelia` already uses a similar pattern (tag push + matrix build + OIDC) in its `packaging` workflow — keep both projects on the same release habit so versions stay aligned when you cut coordinated releases.
