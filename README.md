@@ -56,6 +56,8 @@ Source and issues: see **Repository** URL in `pyproject.toml`.
 
 ## Publishing releases
 
+Step-by-step (tags, GitKraken, PyPI checks): **[docs/RELEASE.md](docs/RELEASE.md)**.
+
 Do **not** rely on `twine upload` from a developer machine for routine releases (credentials drift and audit pain). Use the GitHub Action instead.
 
 1. **Configure [trusted publishing](https://docs.pypi.org/trusted-publishers/)** on PyPI for this GitHub repository and workflow `publish.yml` (OIDC — no `PYPI_API_TOKEN` in repo secrets unless you choose that path).

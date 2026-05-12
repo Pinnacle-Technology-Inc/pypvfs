@@ -4,11 +4,13 @@
 #   1. Bump version in pyproject.toml (and tag e.g. v0.1.1), OR create a GitHub Release from a tag.
 #   2. Push the tag — this workflow builds sdist + per-OS wheels and uploads in one job.
 #
-# PyPI: enable "Trusted publishing" for this GitHub repo (see README).
+# PyPI: enable "Trusted publishing" for this GitHub repo (see docs/RELEASE.md).
 #
 # Manual run: Actions → "Publish to PyPI" → Run workflow (still uses the same tag/ref checkout).
 
 name: Publish to PyPI
+
+run-name: "PyPI publish ${{ github.ref_name }} @ ${{ github.sha }}"
 
 on:
   push:
@@ -16,14 +18,12 @@ on:
       - "v*"
   workflow_dispatch:
 
-permissions:
-  contents: read
-  id-token: write
-
 jobs:
   build-dists:
     name: Build (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -52,6 +52,12 @@ jobs:
     name: Upload to PyPI
     needs: build-dists
     runs-on: ubuntu-latest
+    # PyPI OIDC: id-token must be on the job that runs pypa/gh-action-pypi-publish (not only workflow-level).
+    # Include contents + actions so this job can download workflow artifacts when permissions are explicit.
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
 
     steps:
       - name: Download all wheels and sdist
