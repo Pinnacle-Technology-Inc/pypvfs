@@ -66,7 +66,7 @@ Do **not** rely on `twine upload` from a developer machine for routine releases 
    git tag v0.1.2
    git push origin v0.1.2
    ```
-   Pushing tag `v*` runs [`.github/workflows/publish.yml`](.github/workflows/publish.yml): builds **sdist + wheels** on Ubuntu and Windows, merges artifacts, and uploads with `pypa/gh-action-pypi-publish`.
+   Pushing tag `v*` runs [`.github/workflows/publish.yml`](.github/workflows/publish.yml): builds **sdist + wheel on Ubuntu** and uploads with `pypa/gh-action-pypi-publish`. (A Linux+Windows matrix used to emit two wheels with the **same filename** for this package, which broke `twine check` with `BadZipFile`; use **cibuildwheel** later if you need explicit `win_amd64` wheels on PyPI.)
 3. **Manual run:** Actions → **Publish to PyPI** → *Run workflow* (same build/upload path).
 
 **Note:** `ptech-morelia` already uses a similar pattern (tag push + matrix build + OIDC) in its `packaging` workflow — keep both projects on the same release habit so versions stay aligned when you cut coordinated releases.

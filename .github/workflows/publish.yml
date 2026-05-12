@@ -2,7 +2,7 @@
 #
 # Recommended release flow (same idea as ptech-morelia):
 #   1. Bump version in pyproject.toml (and tag e.g. v0.1.1), OR create a GitHub Release from a tag.
-#   2. Push the tag — this workflow builds sdist + per-OS wheels and uploads in one job.
+#   2. Push the tag — this workflow builds sdist + wheel (Ubuntu) and uploads to PyPI.
 #
 # PyPI: enable "Trusted publishing" for this GitHub repo (see docs/RELEASE.md).
 #
@@ -19,15 +19,14 @@ on:
   workflow_dispatch:
 
 jobs:
+  # Single OS for release artifacts: Linux + Windows matrix can both emit the same
+  # `*-py3-none-any.whl` name for data-only native payloads; merging two artifacts then
+  # overwrites one wheel and twine can see a truncated/corrupt zip (BadZipFile).
   build-dists:
-    name: Build (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
+    name: Build (ubuntu-latest)
+    runs-on: ubuntu-latest
     permissions:
       contents: read
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest]
 
     steps:
       - uses: actions/checkout@v4
@@ -45,7 +44,7 @@ jobs:
       - name: Upload distributions
         uses: actions/upload-artifact@v4
         with:
-          name: dists-${{ matrix.os }}
+          name: dists-release
           path: dist/
 
   pypi-publish:
@@ -60,12 +59,37 @@ jobs:
       id-token: write
 
     steps:
-      - name: Download all wheels and sdist
+      - name: Download built distributions
         uses: actions/download-artifact@v4
         with:
-          pattern: dists-*
-          merge-multiple: true
+          name: dists-release
           path: dist
+
+      - name: Verify wheels are valid zip files
+        run: |
+          ls -la dist/
+          python << 'PY'
+          import glob, pathlib, zipfile, sys
+          bad = False
+          for path in sorted(glob.glob("dist/*.whl")):
+              p = pathlib.Path(path)
+              if p.stat().st_size == 0:
+                  print("ERROR empty wheel:", path)
+                  bad = True
+                  continue
+              try:
+                  with zipfile.ZipFile(path) as z:
+                      err = z.testzip()
+                      if err:
+                          print("ERROR corrupt member", err, "in", path)
+                          bad = True
+                      else:
+                          print("OK", path, p.stat().st_size, "bytes")
+              except zipfile.BadZipFile as e:
+                  print("ERROR BadZipFile", path, e)
+                  bad = True
+          sys.exit(1 if bad else 0)
+          PY
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

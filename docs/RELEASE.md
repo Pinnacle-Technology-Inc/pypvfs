@@ -36,3 +36,9 @@ PyPI may email errors like `OpenID Connect token retrieval failed: GitHub: OIDC 
 If failures persist, ensure the workflow that runs `pypa/gh-action-pypi-publish` sets **`id-token: write` on the publish job** (see `.github/workflows/publish.yml`). GitHub’s default token does not mint OIDC tokens unless that permission is granted on the job that requests the token.
 
 When a job sets `permissions:`, omitted scopes default to **no access** for that job — the publish job also needs **`actions: read`** (and **`contents: read`**) so it can **download** build artifacts before upload.
+
+### `BadZipFile` / “Bad magic number for central directory” during `twine check`
+
+If **Linux and Windows** both run `python -m build` and setuptools emits the **same wheel filename** (e.g. `pypvfs-1.0.1-py3-none-any.whl` — common when native files are only included via `package-data`), merging both CI artifacts into one `dist/` can overwrite or mix outputs and **`twine check` fails** inside `gh-action-pypi-publish`.
+
+The publish workflow builds on **Ubuntu only** so there is a single wheel + sdist. For explicit **manylinux + win_amd64** wheels with distinct names, add **[cibuildwheel](https://cibuildwheel.pypa.io/)** later.
