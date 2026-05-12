@@ -1,0 +1,80 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.egg
+*.egg-info/
+.eggs/
+dist/
+build/
+wheelhouse/
+pip-wheel-metadata/
+
+# Virtual environments (anywhere in the repo)
+.venv/
+venv/
+ENV/
+env/
+src/venv/
+
+# Test / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+*.cover
+
+# Type checkers / linters
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+dmypy.json
+
+# Jupyter
+.ipynb_checkpoints/
+
+# --- Native build (CMake / MSVC under pvfs_tools/Core) ---
+src/pvfs_tools/Core/build/
+src/pvfs_tools/Core/build_linux/
+src/pvfs_tools/Core/build_x64/
+src/pvfs_tools/Core/CMakeFiles/
+src/pvfs_tools/Core/CMakeCache.txt
+src/pvfs_tools/Core/cmake_install.cmake
+src/pvfs_tools/Core/Makefile
+src/pvfs_tools/Core/*.dir/
+src/pvfs_tools/Core/x64/
+src/pvfs_tools/Core/Release/
+src/pvfs_tools/Core/Debug/
+src/pvfs_tools/Core/*.vcxproj*
+src/pvfs_tools/Core/*.sln
+
+# --- IDE / editor ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# --- Secrets & local config (never commit) ---
+.env
+.env.*
+!.env.example
+*.pem
+.pypirc
+
+# --- Misc generated / scratch ---
+*.log
+*.tmp
+temp.*
+*.bkp
+*.dtmp

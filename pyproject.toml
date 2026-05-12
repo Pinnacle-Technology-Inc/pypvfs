@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pypvfs"
+version = "0.1.0"
+description = "Python bindings for Pinnacle Technology PVFS (virtual filesystem for physiological recordings)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Pinnacle Technology Inc." },
+]
+dependencies = [
+    "numpy",
+    "pydantic>=2",
+    "SQLAlchemy>=2",
+    "Pillow>=10.0.0",
+]
+
+[project.optional-dependencies]
+video = ["av"]
+test = ["pytest", "av"]
+examples = ["pyedflib", "av"]
+
+[project.urls]
+Repository = "https://github.com/Pinnacle-Technology-Inc/pypvfs"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["pvfs_tools", "pvfs_tools.*"]
+
+[tool.setuptools.package-data]
+"pvfs_tools.Core" = ["*.so", "*.dll", "*.lib", "*.exp"]
+
+[tool.pytest.ini_options]
+addopts = ["--import-mode=importlib"]
+testpaths = ["tests"]
