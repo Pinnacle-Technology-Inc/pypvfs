@@ -4,6 +4,9 @@ This guide describes how to use the **pypvfs** distribution’s Python package *
 
 **This file lives only in the Git repository**; it is not shipped inside the PyPI wheel. After `pip install pypvfs`, open this document on [GitHub](https://github.com/Pinnacle-Technology-Inc/pypvfs/blob/main/docs/USAGE.md) or clone the repo.
 
+**Note:** pvfs is a generically useful virtual file system.  This layer is available through pvfs_tools/Core/pvfs.cpp, the compiled libraries and python wrappers.  Separate from this is the explicit form used for Pinnacle Technology data acquisition.  This implements a structured data and metadata storage approach within the virtual files system.  It is available via indexed_data_file.py, pvfs_data_file.py, video_data_file.py and the database handlers found in pvfs_tools/Database.  Install  with pip install pypvfs[examples] and consult the examples under pvfs_tools/examples as a quick start.
+
+**Note:** a companion Python project that uses this library to stream and store data from Pinnacle devices can be found at https://github.com/Pinnacle-Technology-Inc/Morelia.
 ---
 
 ## Install and optional pieces
