@@ -1,12 +1,14 @@
-# Publish pypvfs to PyPI using trusted publishing (OIDC). No Twine API token in the repo.
+# Publish pypvfs to PyPI using trusted publishing (OIDC).
 #
-# Recommended release flow (same idea as ptech-morelia):
-#   1. Bump version in pyproject.toml (and tag e.g. v0.1.1), OR create a GitHub Release from a tag.
-#   2. Push the tag — this workflow builds sdist + wheel (Ubuntu) and uploads to PyPI.
+# Release flow:
+#   1. Bump version in pyproject.toml.
+#   2. Tag the commit (e.g. `git tag v1.0.2 && git push origin v1.0.2`).
+#   3. This workflow builds platform-specific wheels with cibuildwheel and
+#      uploads them to PyPI.
 #
-# PyPI: enable "Trusted publishing" for this GitHub repo (see docs/RELEASE.md).
+# PyPI: enable "Trusted publishing" for this GitHub repo/workflow.
 #
-# Manual run: Actions → "Publish to PyPI" → Run workflow (still uses the same tag/ref checkout).
+# Manual run: Actions -> "Publish to PyPI" -> Run workflow.
 
 name: Publish to PyPI
 
@@ -19,15 +21,45 @@ on:
   workflow_dispatch:
 
 jobs:
-  # Single OS for release artifacts: Linux + Windows matrix can both emit the same
-  # `*-py3-none-any.whl` name for data-only native payloads; merging two artifacts then
-  # overwrites one wheel and twine can see a truncated/corrupt zip (BadZipFile).
-  build-dists:
-    name: Build (ubuntu-latest)
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
+  # --------------------------------------------------------------------------
+  # Build one wheel per OS. Because pvfs is a ctypes wrapper (no Python ABI),
+  # scikit-build-core tags each wheel `py3-none-<plat>` and cibuildwheel only
+  # needs to run once per platform.
+  # --------------------------------------------------------------------------
+  build-wheels:
+    name: Build wheels (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: wheels-linux
+          - os: windows-latest
+            artifact: wheels-windows
 
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.21
+        # All cibuildwheel config (manylinux image, build matrix, smoke test,
+        # etc.) lives in [tool.cibuildwheel] inside pyproject.toml.
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: wheelhouse/*.whl
+
+  # --------------------------------------------------------------------------
+  # Sdist is built separately on Linux so users on an unsupported platform
+  # can still `pip install pypvfs` (it will compile locally if a C++ toolchain
+  # is present).
+  # --------------------------------------------------------------------------
+  build-sdist:
+    name: Build sdist
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -35,35 +67,37 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install build
-        run: python -m pip install --upgrade pip build
+      - name: Build sdist
+        run: |
+          python -m pip install --upgrade pip build
+          python -m build --sdist
 
-      - name: Build sdist and wheel
-        run: python -m build
-
-      - name: Upload distributions
+      - name: Upload sdist
         uses: actions/upload-artifact@v4
         with:
-          name: dists-release
-          path: dist/
+          name: sdist
+          path: dist/*.tar.gz
 
-  pypi-publish:
+  # --------------------------------------------------------------------------
+  # Validate every artifact, then publish via PyPI OIDC trusted publishing.
+  # --------------------------------------------------------------------------
+  publish:
     name: Upload to PyPI
-    needs: build-dists
+    needs: [build-wheels, build-sdist]
     runs-on: ubuntu-latest
-    # PyPI OIDC: id-token must be on the job that runs pypa/gh-action-pypi-publish (not only workflow-level).
-    # Include contents + actions so this job can download workflow artifacts when permissions are explicit.
     permissions:
       contents: read
       actions: read
       id-token: write
 
     steps:
-      - name: Download built distributions
+      - name: Download all distributions
         uses: actions/download-artifact@v4
         with:
-          name: dists-release
           path: dist
+          # Each wheel job (and the sdist job) uploads under a unique artifact
+          # name, so merge them into one flat dist/ for twine.
+          merge-multiple: true
 
       - name: Verify wheels are valid zip files
         run: |

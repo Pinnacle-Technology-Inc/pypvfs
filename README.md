@@ -22,7 +22,17 @@ from pvfs_tools.Core.pvfs_data_file import PvfsDataFile
 
 ## Native library
 
-The package ships platform-specific native libraries under `pvfs_tools.Core` (`.dll` on Windows, `.so` on Linux) when present in the wheel or source tree. If your platform binary is missing, build from `src/pvfs_tools/Core/` using `build_linux.sh` (Linux/WSL) or `build_pvfs_x64.ps1` (under `src/pvfs_tools/` on Windows), then from this repository root run `pip install -e .`.
+The package ships platform-specific native libraries under `pvfs_tools.Core` (`.dll` on Windows, `.so` on Linux). On PyPI you receive a prebuilt wheel for your platform, so `pip install pypvfs` does **not** require a C++ toolchain.
+
+If you install from source (sdist or a checkout), `pip` will invoke [`scikit-build-core`](https://scikit-build-core.readthedocs.io/) which compiles `src/pvfs_tools/Core/pvfs.cpp` and `pvfs_wrapper.cpp` via CMake. You will need:
+
+- CMake ≥ 3.15 (pip installs `cmake` from PyPI into the isolated build env if your system lacks it)
+- A C++17 compiler (`g++`/`clang++` on Linux/macOS, MSVC 2019+ on Windows)
+
+```bash
+pip install -e ".[test]"   # builds the native libs and installs in editable mode
+pytest
+```
 
 ## Examples (repository `examples/`)
 
@@ -61,12 +71,12 @@ Step-by-step (tags, GitKraken, PyPI checks): **[docs/RELEASE.md](docs/RELEASE.md
 Do **not** rely on `twine upload` from a developer machine for routine releases (credentials drift and audit pain). Use the GitHub Action instead.
 
 1. **Configure [trusted publishing](https://docs.pypi.org/trusted-publishers/)** on PyPI for this GitHub repository and workflow `publish.yml` (OIDC — no `PYPI_API_TOKEN` in repo secrets unless you choose that path).
-2. **Bump** `version` in `pyproject.toml`, commit, then create and push a **version tag** matching your policy, e.g. `v0.1.2`:
+2. **Bump** `version` in `pyproject.toml`, commit, then create and push a **version tag** matching your policy, e.g. `v1.0.2`:
    ```bash
-   git tag v0.1.2
-   git push origin v0.1.2
+   git tag v1.0.2
+   git push origin v1.0.2
    ```
-   Pushing tag `v*` runs [`.github/workflows/publish.yml`](.github/workflows/publish.yml): builds **sdist + wheel on Ubuntu** and uploads with `pypa/gh-action-pypi-publish`. (A Linux+Windows matrix used to emit two wheels with the **same filename** for this package, which broke `twine check` with `BadZipFile`; use **cibuildwheel** later if you need explicit `win_amd64` wheels on PyPI.)
+   Pushing tag `v*` runs [`.github/workflows/publish.yml`](.github/workflows/publish.yml): [`cibuildwheel`](https://cibuildwheel.pypa.io/) builds a `manylinux_2_28_x86_64` wheel inside the PyPA manylinux Docker image and a `win_amd64` wheel on a Windows runner, then uploads both (plus the sdist) with `pypa/gh-action-pypi-publish`. The manylinux image guarantees a low glibc baseline so the published Linux wheel works on RHEL/CentOS/Rocky/Alma 8+, Ubuntu 20.04+, Debian 11+, and Amazon Linux 2023 — not just the build host.
 3. **Manual run:** Actions → **Publish to PyPI** → *Run workflow* (same build/upload path).
 
 **Note:** `ptech-morelia` already uses a similar pattern (tag push + matrix build + OIDC) in its `packaging` workflow — keep both projects on the same release habit so versions stay aligned when you cut coordinated releases.

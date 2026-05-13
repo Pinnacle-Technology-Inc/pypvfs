@@ -24,10 +24,15 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
+      # scikit-build-core invokes CMake and a C++17 compiler at install time.
+      # ubuntu-latest ships g++ + cmake; windows-latest ships MSVC + cmake.
+      # No extra system setup is required.
+
+      - name: Install package (editable) with test extras
+        # pip>=23 understands scikit-build-core's editable mode out of the box.
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[test]"
+          pip install -e ".[test]" -v
 
       - name: Run tests
         run: pytest -q

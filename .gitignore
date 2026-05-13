@@ -38,7 +38,17 @@ dmypy.json
 # Jupyter
 .ipynb_checkpoints/
 
-# --- Native build (CMake / MSVC under pvfs_tools/Core) ---
+# --- Native build (CMake / MSVC) ---
+# Build artifacts are produced on demand by scikit-build-core during
+# `pip install` / `python -m build` / cibuildwheel and must NEVER be
+# committed (doing so is what caused pypvfs 1.0.1 to ship Ubuntu-24.04-
+# glibc-bound .so files on PyPI).
+src/pvfs_tools/Core/*.so
+src/pvfs_tools/Core/*.dll
+src/pvfs_tools/Core/*.dylib
+src/pvfs_tools/Core/*.lib
+src/pvfs_tools/Core/*.exp
+src/pvfs_tools/Core/*.pdb
 src/pvfs_tools/Core/build/
 src/pvfs_tools/Core/build_linux/
 src/pvfs_tools/Core/build_x64/
@@ -52,6 +62,10 @@ src/pvfs_tools/Core/Release/
 src/pvfs_tools/Core/Debug/
 src/pvfs_tools/Core/*.vcxproj*
 src/pvfs_tools/Core/*.sln
+
+# scikit-build-core build tree at the repo root
+/build/
+/_skbuild/
 
 # --- IDE / editor ---
 .vscode/
