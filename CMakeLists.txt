@@ -89,6 +89,7 @@ install(DIRECTORY "${CMAKE_SOURCE_DIR}/examples/"
     FILES_MATCHING
         PATTERN "*.py"
 )
+
 install(CODE [[
     file(WRITE "${CMAKE_INSTALL_PREFIX}/pvfs_tools/examples/__init__.py"
 "\"\"\"Runnable examples shipped with pypvfs.

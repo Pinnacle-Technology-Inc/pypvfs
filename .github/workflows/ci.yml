@@ -28,11 +28,17 @@ jobs:
       # ubuntu-latest ships g++ + cmake; windows-latest ships MSVC + cmake.
       # No extra system setup is required.
 
-      - name: Install package (editable) with test extras
-        # pip>=23 understands scikit-build-core's editable mode out of the box.
+      - name: Install package with test extras
+        # NOTE: deliberately not editable (`-e`). In scikit-build-core's
+        # default editable ("redirect") mode the Python source is imported
+        # from src/pvfs_tools/, but CMake-built native libraries live in the
+        # build/ directory. pvfs_binding.py loads its DLL/.so from
+        # Path(__file__).parent, so under `-e` it would look in the source
+        # tree and fail. A regular install also validates exactly what users
+        # get from PyPI.
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[test]" -v
+          pip install ".[test]" -v
 
       - name: Run tests
         run: pytest -q
