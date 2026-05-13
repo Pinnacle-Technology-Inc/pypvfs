@@ -34,20 +34,31 @@ pip install -e ".[test]"   # builds the native libs and installs in editable mod
 pytest
 ```
 
-## Examples (repository `examples/`)
+## Examples
 
-Requires a working `pypvfs` install; GUI examples need a display.
+The runnable example scripts ship **inside the installed package**, so they are available immediately after `pip install pypvfs` — no repo clone required.
 
-| Script | Extra deps | Description |
+| Module | Extra deps | Description |
 |--------|------------|-------------|
-| `examples/pvfs_create_cli.py` | — | CLI to create a synthetic PVFS file |
-| `examples/pvfs_to_edf_converter.py` | `pyedflib` | Tk GUI: PVFS → EDF+ |
-| `examples/pvfs_to_video_converter.py` | `pypvfs[video]` | Tk GUI: PVFS video → WebM |
+| `pvfs_tools.examples.pvfs_create_cli` | — | CLI to create a synthetic PVFS file |
+| `pvfs_tools.examples.pvfs_to_edf_converter` | `pypvfs[examples]` (`pyedflib`) | Tk GUI: PVFS → EDF+ |
+| `pvfs_tools.examples.pvfs_to_video_converter` | `pypvfs[video]` (`av`) | Tk GUI: PVFS video → WebM |
 
 ```bash
-pip install pyedflib
-python examples/pvfs_to_edf_converter.py
+# Locate or list the installed examples
+pypvfs-examples
+pypvfs-examples --list
+
+# Copy them out to a directory you can edit freely
+pypvfs-examples --copy-to ./my-pvfs-examples
+
+# Or run any of them directly
+python -m pvfs_tools.examples.pvfs_create_cli --help
+python -m pvfs_tools.examples.pvfs_to_edf_converter
+python -m pvfs_tools.examples.pvfs_to_video_converter
 ```
+
+The same scripts also live at the top of the GitHub repo under [`examples/`](examples/) for easy browsing; both copies are identical, the package build just relocates them into `pvfs_tools/examples/` so they are usable without cloning.
 
 ## Documentation
 

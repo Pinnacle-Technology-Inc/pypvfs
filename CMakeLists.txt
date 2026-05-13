@@ -77,3 +77,31 @@ install(TARGETS pvfs pvfs_wrapper
     LIBRARY DESTINATION pvfs_tools/Core   # .so on Linux / .dylib on macOS
     RUNTIME DESTINATION pvfs_tools/Core   # .dll on Windows
 )
+
+# Ship the top-level examples/ directory inside the installed package so users
+# can run them with:
+#     python -m pvfs_tools.examples.pvfs_create_cli ...
+#
+# A generated __init__.py makes pvfs_tools.examples a real sub-package without
+# requiring one in the GitHub-visible source tree.
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/examples/"
+    DESTINATION pvfs_tools/examples
+    FILES_MATCHING
+        PATTERN "*.py"
+)
+install(CODE [[
+    file(WRITE "${CMAKE_INSTALL_PREFIX}/pvfs_tools/examples/__init__.py"
+"\"\"\"Runnable examples shipped with pypvfs.
+
+Each module here is a standalone script with an ``if __name__ == \"__main__\"``
+block. Run any example directly with::
+
+    python -m pvfs_tools.examples.pvfs_create_cli --help
+    python -m pvfs_tools.examples.pvfs_to_edf_converter
+    python -m pvfs_tools.examples.pvfs_to_video_converter
+
+Note: pvfs_to_edf_converter requires the [examples] extra (pyedflib), and
+pvfs_to_video_converter requires the [video] extra (av).
+\"\"\"
+")
+]])

@@ -27,6 +27,11 @@ examples = ["pyedflib", "av"]
 [project.urls]
 Repository = "https://github.com/Pinnacle-Technology-Inc/pypvfs"
 
+[project.scripts]
+# Discoverable on PATH after `pip install pypvfs`. Prints the location of
+# the bundled examples and can copy them out for editing.
+pypvfs-examples = "pvfs_tools._examples_cli:main"
+
 # --- Build (scikit-build-core drives CMake) ---------------------------------
 #
 # CMakeLists.txt at the repo root builds libpvfs and libpvfs_wrapper and
